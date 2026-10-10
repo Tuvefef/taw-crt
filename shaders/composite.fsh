@@ -17,9 +17,9 @@ void main(void)
     vec2 fragCoord = textureCoord * vec2(viewWidth, viewHeight);
     vec2 coord = textureCoord;
     vec3 color = texture(colortex0, coord).rgb;
-
     vec3 final = color;
 
+    final *= mix(0.5, 1.0, smoothstep(0.0, 0.38, luma(final)));
     final = mix(vec3(luma(final)), final, SATURATION_STRENGT);
 
     float c = mod(fragCoord.x, 4.0);

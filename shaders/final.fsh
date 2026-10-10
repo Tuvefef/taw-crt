@@ -10,6 +10,7 @@ in vec2 textureCoord;
 layout (location = 0) out vec4 color0;
 
 #include "common/common.glsl"
+#include "config/config.h"
 
 vec3 bloom(void)
 {
@@ -29,7 +30,7 @@ vec3 bloom(void)
     }
 
     bloom *= 3.0 / samples;
-    bloom += texture(colortex0, uv).rgb * 0.97;
+    bloom += texture(colortex0, uv).rgb * BLOOM_BASE;
 
     return bloom;
 }
