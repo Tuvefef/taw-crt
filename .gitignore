@@ -1,1 +1,3 @@
 .vscode
+shaders/gbuffers*
+taw*

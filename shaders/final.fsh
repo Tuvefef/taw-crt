@@ -4,6 +4,7 @@ uniform sampler2D colortex0;
 
 uniform float viewWidth;
 uniform float viewHeight;
+uniform int worldTime;
 
 in vec2 textureCoord;
 
@@ -14,25 +15,43 @@ layout (location = 0) out vec4 color0;
 
 vec3 bloom(void)
 {
+    float bloomBase;
     vec2 uv = textureCoord;
-    vec2 texel = vec2(1.0) / vec2(viewWidth, viewHeight);
+    vec2 texel = 1.0 / vec2(viewWidth, viewHeight);
 
-    vec3 bloom = vec3(0.0);
+    vec3 center = texture(colortex0, uv).rgb;
+    vec3 sum = vec3(0.0);
+    float weightSum = 0.0;
 
-    const float samples = 32.0;
-    vec2 point = vec2(16.0, 0.0) * inversesqrt(samples);
+    vec2 dir = vec2(1.0, 0.0);
 
-    for (int i = 0; i < int(samples); i++)
+    for (int i = 0; i < 8; ++i)
     {
-        point *= MAT2_ROT;
-        vec2 coord = uv + point * sqrt(float(i)) * texel;
-        bloom += texture(colortex0, coord).rgb * (1.0 - float(i) / samples);
+        vec2 offset = dir * texel * 2.0;
+        sum += texture(colortex0, uv + offset).rgb * 0.65;
+        sum += texture(colortex0, uv - offset).rgb * 0.65;
+        weightSum += 1.30;
+
+        offset = dir * texel * 5.0;
+        sum += texture(colortex0, uv + offset).rgb * 0.35;
+        sum += texture(colortex0, uv - offset).rgb * 0.35;
+        weightSum += 0.70;
+
+        dir = ROT45 * dir;
     }
 
-    bloom *= 3.0 / samples;
-    bloom += texture(colortex0, uv).rgb * BLOOM_BASE;
+    vec3 glow = sum / weightSum;
 
-    return bloom;
+    if (nightFactor(worldTime) == 0.0)
+    {
+        bloomBase = DAY_BLOOM;
+    }
+    else
+    {
+        bloomBase = NIGHT_BLOOM;
+    }
+
+    return glow + center * bloomBase;
 }
 
 void main(void)
